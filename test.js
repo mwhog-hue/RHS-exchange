@@ -66,8 +66,8 @@ ok('Trümmer-Brücke → v3 (Kürzel, Anzeige-Prüfungsberechtigung, Skalen aus 
 
 // --- echte Exportdateien vom 30.09.2026 (wenn vorhanden)
 const U = '/mnt/user-data/uploads/'; const fs = require('fs');
-[['RHS_Training_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'erfolgreich'], ['RHS_Sicherung_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'offen'], ['RHS_Auswertung_Flaechensuche_2026-09-30-17-38.json', 'flaeche-eval', 'teilweise']].forEach(([f, kind, erg]) => {
-  if (fs.existsSync(U + f)) ok('echte Datei ' + f, () => { const d = JSON.parse(fs.readFileSync(U + f, 'utf8')); const p = RHS.normalize(d); assert.strictEqual(RHS.detect(d), kind); assert.strictEqual(p.records[0].data.bewertung.ergebnis, erg); const v = RHS.validate(p); assert.ok(v.ok, v.fehler.join('; ')); });
+[['Trainingstagebuch_JSON-Sicherung_2026-09-30_21-09.json', 'tagebuch-rha', 'erfolgreich'], ['MT-Training_Lissy_2026-09-30.json', 'tagebuch-mt', 'offen'], ['RHS_Team_Irma.json', 'rhs-exchange-v2', null], ['RHS_Training_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'erfolgreich'], ['RHS_Sicherung_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'offen'], ['RHS_Auswertung_Flaechensuche_2026-09-30-17-38.json', 'flaeche-eval', 'teilweise']].forEach(([f, kind, erg]) => {
+  if (fs.existsSync(U + f)) ok('echte Datei ' + f, () => { const d = JSON.parse(fs.readFileSync(U + f, 'utf8')); const p = RHS.normalize(d); assert.strictEqual(RHS.detect(d), kind); if (erg) assert.strictEqual(p.records.find(r => r.type === 'entry').data.bewertung.ergebnis, erg); const v = RHS.validate(p); assert.ok(v.ok, v.fehler.join('; ')); });
 });
 
 // --- Flächensuchassistent Export
