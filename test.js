@@ -48,19 +48,26 @@ ok('Mantrailing-Brücke → v3 Eintrag (Spurleger nur als Kürzel)', () => {
   const v = RHS.validate(p); assert.ok(v.ok, v.fehler.join('; '));
 });
 
-// --- Trümmersuchassistent Export
+// --- Trümmersuchassistent Export (Feldnamen wie in v2.5, echte Datei vom 30.09.2026 unten)
 const tr = { bridgeFormat: 'rhs-truemmersuchassistent-export', schemaVersion: 2, createdAt: '2026-09-30T12:00:00Z', sourceApp: 'rh-truemmersuchassistent', appVersion: '2.5',
-  state: { version: 3, mode: 'Training', events: [{ t: '2026-09-30T11:10:00Z', type: 'Ruhephase Hund' }], track: [], finds: [{ name: 'Petra Paul', indication: 'Verbeller', quality: 4, estimate: { x: 1, y: 2 }, actual: { x: 1.5, y: 2 } }, { name: 'VP2', indication: 'Sitz an Fundstelle', quality: 3 }],
-    rubbleMarks: { estimate: [], dogActual: [], actual: [] }, rubbleDrawing: [[1, 2, 3]], mapWidthM: '40', sectorList: [{ name: 'A', status: 'abgesucht' }], searchAreaPolygon: [] },
-  protocol: { ergebnis: 'erfolgreich', notizen: 'gut' } };
-ok('Trümmer-Brücke → v3 (drei Fundlagen, Prüfungsberechtigung der Anzeige)', () => {
+  state: { version: 3, mode: 'Training', createdAt: '2026-09-30T11:00:00Z', team: 'Micha/Mogli', place: 'Baugrube', events: [{ at: '2026-09-30T11:10:00Z', type: 'Ruhephase Hund' }], track: [{ t: '2026-09-30T11:01:00Z', lat: 51.5, lon: 9.39, acc: 3 }],
+    finds: [{ id: 1, at: '2026-09-30T11:05:00Z', result: 'VP gefunden', bark: 'anhaltend', marking: '', depth: '1 m', lat: 51.5, lon: 9.39, acc: 3 }, { id: 2, result: 'nicht gefunden', bark: 'Sitz an Fundstelle' }],
+    chips: { structure: ['Beton'], hazards: ['Staub'], pattern: ['Grobsuche'], scent: ['Geruchspool'] }, rubbleDrawing: [[1, 2, 3]], mapWidthM: '40', sectorList: [], searchAreaPolygon: [], wxTemp: 22.6, rhsExchange: { team: { handler: '', dogName: '' } } },
+  protocol: { id: 'proto-1', startAt: '2026-09-30T11:01:00Z', kpi: { dur: 174 }, progress: { start: '3 – wechselhaft', search: '1 – Aufbau', find: '4 – sicher' }, ratingNum: 3, debrief: { good: 'ruhig', next: 'tiefer verstecken' } } };
+ok('Trümmer-Brücke → v3 (Kürzel, Anzeige-Prüfungsberechtigung, Skalen aus Text, stabile Id)', () => {
   const p = RHS.normalize(tr); const e = p.records[0]; const vps = e.data.nutzlast.versteckpersonen;
-  assert.strictEqual(vps[0].kuerzel, 'PP'); assert.strictEqual(vps[0].anzeige.pruefungsberechtigt, true);
-  assert.strictEqual(vps[1].anzeige.art, 'sitzen_fundstelle'); assert.strictEqual(vps[1].anzeige.pruefungsberechtigt, false);
-  assert.deepStrictEqual(vps[0].positionen.vpTatsaechlich, { x: 1.5, y: 2 });
-  assert.strictEqual(e.data.nutzlast.ruhephasen.length, 1);
-  assert.strictEqual(e.data.nutzlast.skizze.breiteM, 40);
+  assert.strictEqual(e.id, 'tr-proto-1'); assert.strictEqual(e.data.teamId, 'p-mi:h-mogli:truemmer');
+  assert.strictEqual(vps[0].anzeige.pruefungsberechtigt, true); assert.strictEqual(vps[1].anzeige.art, 'sitzen_fundstelle'); assert.strictEqual(vps[1].anzeige.pruefungsberechtigt, false);
+  assert.strictEqual(e.data.nutzlast.ruhephasen.length, 1); assert.strictEqual(e.data.nutzlast.skizze.breiteM, 40);
+  assert.deepStrictEqual(e.data.bewertung.zusatzskalen.map(z => z.wert), [3, 1, 4]); assert.strictEqual(e.data.bewertung.naechsterSchritt, 'tiefer verstecken');
+  assert.strictEqual(RHS.merge(p.records, RHS.normalize(tr)).records.length, 1, 'Doppelimport erzeugt kein Duplikat');
   const v = RHS.validate(p); assert.ok(v.ok, v.fehler.join('; '));
+});
+
+// --- echte Exportdateien vom 30.09.2026 (wenn vorhanden)
+const U = '/mnt/user-data/uploads/'; const fs = require('fs');
+[['RHS_Training_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'erfolgreich'], ['RHS_Sicherung_Truemmersuche_2026-09-30.json', 'truemmer-bridge', 'offen'], ['RHS_Auswertung_Flaechensuche_2026-09-30-17-38.json', 'flaeche-eval', 'teilweise']].forEach(([f, kind, erg]) => {
+  if (fs.existsSync(U + f)) ok('echte Datei ' + f, () => { const d = JSON.parse(fs.readFileSync(U + f, 'utf8')); const p = RHS.normalize(d); assert.strictEqual(RHS.detect(d), kind); assert.strictEqual(p.records[0].data.bewertung.ergebnis, erg); const v = RHS.validate(p); assert.ok(v.ok, v.fehler.join('; ')); });
 });
 
 // --- Flächensuchassistent Export
