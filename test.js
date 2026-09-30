@@ -75,6 +75,16 @@ ok('Flächen-Brücke → v3 (teamId je Sparte)', () => {
   assert.ok(RHS.validate(p).ok, RHS.validate(p).fehler.join('; '));
 });
 
+// --- Protokoll-Sicherung des Mantrailing-Assistenten (echte Datei vom 30.09.2026)
+const protoDatei = '/mnt/user-data/uploads/RHS_Mantrailing_Protokolle_2026-09-30.json';
+if (require('fs').existsSync(protoDatei)) ok('Protokolle-Format (echte Datei) → v3 mit Person/Hund/Team', () => {
+  const p = RHS.normalize(JSON.parse(require('fs').readFileSync(protoDatei, 'utf8')));
+  assert.strictEqual(RHS.detect({ format: 'rhs-mantrailing-protokolle', records: [] }), 'protokolle');
+  assert.strictEqual(p.hunde[0].rufname, 'Mogli'); assert.strictEqual(p.teams[0].sparte, 'mantrailing');
+  const e = p.records[0].data; assert.strictEqual(e.helfer[0].kuerzel, 'SV'); assert.strictEqual(e.nutzlast.trailAlterMin, 62); assert.strictEqual(e.nutzlast.gpsEreignisse.length, 13);
+  assert.ok(RHS.validate(p).ok, RHS.validate(p).fehler.join('; '));
+});
+
 // --- v3 durchreichen + Namen kürzen
 ok('v3 mit vollem Namen wird gekürzt und sonst unverändert durchgereicht', () => {
   const p = RHS.normalize(RHS.buildPackage({ source: { app: 'test' }, records: [RHS.newEntry({ sparte: 'flaeche', helfer: ['Erika Musterfrau'], nutzlast: { versteckpersonen: [{ name: 'Max Mann' }], fremdesFeld: 42 } })] }));
